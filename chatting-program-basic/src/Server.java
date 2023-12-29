@@ -40,7 +40,15 @@ public class Server {
                 }
 
                 ClientHandler c = new ClientHandler(clientSocket);
+                String username = c.getBr().readLine();
+                c.setUsername(username);
+                System.out.printf("\t\t%s 님이 입장하셨습니다.%n", username);
                 clients.add(c);
+                try{
+                    c.broadcast(String.format("%s 님이 입장하셨습니다. (%d/5)", username, clients.size()));
+                } catch (Exception e){
+
+                }
                 new Thread(c).start();
             }
         } catch (IOException e) {
@@ -68,23 +76,18 @@ public class Server {
         public void run() {
 
             try {
-                username = br.readLine();
-                System.out.printf("\t\t%s 님이 입장하셨습니다.%n", username);
-                broadcast(String.format("%s 님이 입장하셨습니다. (%d/5)", username, clients.size()));
-
                 while (true) {
                     String msg = br.readLine();
                     if(msg==null) continue;
 
                     if (msg.startsWith(commandKey)) {
                         if (msg.substring(1).equals("exit")) {
-
                             break;
                         }
                     }
                     broadcast(String.format("* %s: %s", username, msg));
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             } finally{
                 try {
@@ -96,17 +99,22 @@ public class Server {
                         clients.remove(this);
                     }
                     broadcast(String.format("* %s 님이 채팅에서 나갔습니다.", username));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
 
+        public void setUsername(String username){
+            this.username = username;
+        }
+
+        public BufferedReader getBr() { return this.br; }
         public BufferedWriter getBw() {
             return this.bw;
         }
 
-        private void broadcast(String message) throws IOException {
+        public void broadcast(String message) throws Exception {
             for (ClientHandler client : clients) {
                 client.getBw().write(message);
                 client.getBw().newLine();
