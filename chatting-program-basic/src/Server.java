@@ -7,7 +7,7 @@ public class Server {
 
     private static final int SERVER_PORT = 55607;
     private static final int MAX_CLIENT = 5;
-    private static List<ClientHandler> clients = new ArrayList<>(MAX_CLIENT);
+    private static volatile List<ClientHandler> clients = new ArrayList<>(MAX_CLIENT);
     private static final String commandKey = "\\";
 
     public static void main(String[] args) {
@@ -52,6 +52,7 @@ public class Server {
         private Socket clientSocket;
         private BufferedWriter bw;
         private BufferedReader br;
+        private String username;
 
         public ClientHandler(Socket clientSocket) {
             try {
@@ -67,7 +68,7 @@ public class Server {
         public void run() {
 
             try {
-                String username = br.readLine();
+                username = br.readLine();
                 System.out.printf("\t\t%s 님이 입장하셨습니다.%n", username);
                 broadcast(String.format("%s 님이 입장하셨습니다. (%d/5)", username, clients.size()));
 
@@ -77,8 +78,7 @@ public class Server {
 
                     if (msg.startsWith(commandKey)) {
                         if (msg.substring(1).equals("exit")) {
-                            System.out.printf("\t\t%s 님이 나갔습니다.", username);
-                            broadcast(String.format("* %s 님이 채팅에서 나갔습니다.", username));
+
                             break;
                         }
                     }
@@ -86,16 +86,19 @@ public class Server {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-
-
-            try {
-                clientSocket.close();
-                br.close();
-                bw.close();
-                clients.remove(this);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } finally{
+                try {
+                    System.out.printf("\t\t%s 님이 나갔습니다.", username);
+                    synchronized (this){
+                        clientSocket.close();
+                        br.close();
+                        bw.close();
+                        clients.remove(this);
+                    }
+                    broadcast(String.format("* %s 님이 채팅에서 나갔습니다.", username));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
