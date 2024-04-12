@@ -5,7 +5,7 @@ import java.net.Socket;
 
 public class Server {
 
-    private static final int SERVER_PORT = 55607;
+    private static final int SERVER_PORT = "#Port";
     private static final int MAX_CLIENT = 5;
     private static volatile List<ClientHandler> clients = new ArrayList<>(MAX_CLIENT);
     private static final String commandKey = "\\";

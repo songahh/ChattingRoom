@@ -2,8 +2,8 @@ import java.io.*;
 import java.net.Socket;
 
 public class Client {
-    private static final String SERVER_ADDRESS = "localhost";
-    private static final int SERVER_PORT = 55607;
+    private static final String SERVER_ADDRESS = "Host";
+    private static final int SERVER_PORT = "#Port";
 
     public static void main(String[] args) {
         try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
